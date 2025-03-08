@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { checkSchema } from "express-validator";
 
 export interface ReceiptItem {
-  price: number;
+  price: string;
   shortDescription: string;
 }
 
@@ -16,20 +16,22 @@ export interface ReceiptData {
 
 export const processReceiptSchema = checkSchema(
   {
-    retailer: { isString: true, notEmpty: true },
+    retailer: { isString: true, notEmpty: true, matches: {options: /^[\w\s\-&]+$/}},
     purchaseDate: { isString: true, notEmpty: true, isDate: true },
     purchaseTime: { isString: true, notEmpty: true, isTime: true },
     items: {
       isArray: true,
       custom: {
         options: (value) => {
-          return value.every((item: ReceiptItem) => {
-            return item.price && item.shortDescription;
+          return value.length > 0 && value.every((item: { price: string, shortDescription: string }) => {
+            let priceRegex = /^\d+\.\d{2}$/;
+            let shortDescriptionRegex = /^[\w\s\-]+$/;
+            return item.price && item.shortDescription && item.price.length !== 0 && item.shortDescription.length !== 0 && priceRegex.test(item.price) && shortDescriptionRegex.test(item.shortDescription);
           });
         },
       },
     },
-    total: { isString: true, notEmpty: true, isNumeric: true },
+    total: { isString: true, notEmpty: true, isNumeric: true, matches: {options: /^\d+\.\d{2}$/} },
   },
   ["body"]
 );
@@ -45,7 +47,7 @@ export function calculatePoints(receipt: ReceiptData): number {
     return (
       acc +
       (item.shortDescription.trim().length % 3 === 0
-        ? Math.ceil(item.price * 0.2)
+        ? Math.ceil(Number(item.price) * 0.2)
         : 0)
     );
   }, 0);
@@ -69,6 +71,9 @@ export const handleProcessReceipt = (
   receiptsDb: Record<string, { points: number }>
 ): string => {
   let receiptId = crypto.randomUUID();
+  while(receiptsDb[receiptId] !== undefined) {
+    receiptId = crypto.randomUUID();
+  }
 
   const parsedReceiptData = {
     retailer: receiptData.retailer,
