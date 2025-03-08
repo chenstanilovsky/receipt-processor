@@ -1,0 +1,20 @@
+{
+  "name": "receipt-processor",
+  "version": "1.0.0",
+  "description": "A receipt processing API built with Express",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node --no-warnings=ExperimentalWarning --loader ts-node/esm index.ts",
+    "dev": "nodemon --exec node --no-warnings=ExperimentalWarning --loader ts-node/esm index.ts"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2"
+  }
+}
