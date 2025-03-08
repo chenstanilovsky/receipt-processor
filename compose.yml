@@ -1,12 +1,9 @@
-version: "3.8"
-
 services:
   receipt-processor:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: node:latest
     ports:
       - "3000:3000"
     volumes:
       - .:/receipt-processor
-    command: npm start
+    working_dir: /receipt-processor
+    command: bash -c "npm upgrade && npm update && npm install && npm start"
